@@ -1,0 +1,87 @@
+:root {
+    --color-100: #22223b;
+    --color-200: #4a4e69;
+    --color-300: #9a8c98;
+    --color-400: #c9ada7;
+    --color-500: #f2e9e4;
+
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--color-500);
+}
+
+html {
+    min-height: 100%;
+
+    display: flex;
+    flex-direction: column;
+}
+
+body {
+    flex-grow: 1;
+
+    background-color: var(--color-100);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+a {
+    color: var(--color-500);
+}
+
+a:visited {
+    color: var(--color-400);
+}
+
+#content {
+    align-self: stretch;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#file-list {
+    flex-grow: 1;
+    max-width: 36em;
+    border-radius: 1em;
+    align-self: center;
+    margin: 0;
+    padding: 0;
+    padding: 0.5em;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-wrap: wrap;
+    background-color: var(--color-200);
+    list-style-type: none;
+}
+
+#file-list>li {
+    max-width: 6em;
+    background-color: #ffffff11;
+    margin: 0.5em;
+    border-radius: 0.5em;
+}
+
+#file-list>li div {
+    padding: 0.5em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#file-list>li img {
+    width: 100%;
+}
+
+#file-list>li p {
+    max-width: 100%;
+    margin: 0;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.8rem;
+}

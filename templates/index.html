@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <title>File Share</title>
+</head>
+
+<body>
+    <!-- <h1>File Share</h1> -->
+    <div id="content">
+        <ul id="file-list">
+            {% for item in items %}
+            <li>
+                <a href="/{{ item }}" title="{{ item.name }}">
+                    <div>
+                        <img src="{{ item.icon_url }}" alt="">
+                        <p>{{ item.name }}</p>
+                        <p>{{ item.size }}</p>
+                    </div>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+
+</html>
