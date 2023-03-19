@@ -30,14 +30,8 @@ def format_filesize(size):
 
 
 class File:
-    FOLDER_ICON_FILENAME = "icons/folder-svgrepo-com.svg"
-    FILE_ICON_FILENAME = "icons/document-svgrepo-com.svg"
-
-    @property
-    def icon_url(self):
-        if self.is_dir():
-            return url_for("static", filename=self.FOLDER_ICON_FILENAME)
-        return url_for("static", filename=self.FILE_ICON_FILENAME)
+    FOLDER_ICON_FILENAME = "icons/folder.svg"
+    FILE_ICON_FILENAME = "icons/document.svg"
 
     @property
     def size(self):
@@ -45,10 +39,17 @@ class File:
             return ""
         return format_filesize(self.path.stat().st_size)
 
-    def __init__(self, path):
+    def __init__(self, path, icon_url=None):
         self.path = Path(path)
         if not self.path.exists():
             raise FileNotFoundError(f"File does not exist: {path}")
+        # Set icon_url with fallback
+        if icon_url is not None:
+            self.icon_url = icon_url
+        elif self.is_dir():
+            self.icon_url = url_for("static", filename=self.FOLDER_ICON_FILENAME)
+        else:
+            self.icon_url = url_for("static", filename=self.FILE_ICON_FILENAME)
 
     def __str__(self):
         return str(self.path)
@@ -77,7 +78,11 @@ def hello_world(path=""):
         base_path = Path()
     items = map(File, base_path.iterdir())
     if base_path.resolve() != Path.cwd():
-        items = chain([File(base_path / "..")], items)
+        back_folder = File(
+            base_path / "..",
+            icon_url=url_for("static", filename="icons/folder-left.svg"),
+        )
+        items = chain([back_folder], items)
     return render_template(
         "index.html",
         parent=base_path.parent if base_path.parent != base_path else None,
