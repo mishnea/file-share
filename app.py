@@ -1,38 +1,17 @@
 from itertools import chain
-from math import log10, log
 from operator import methodcaller
 from pathlib import Path
 
-from flask import Flask, render_template, url_for, send_file
+from flask import Flask, render_template, url_for, send_file, redirect
+
+from utils.constants import *
+from utils.helpers import format_filesize, restrict_path
 
 
 app = Flask(__name__)
 
 
-size_units = [
-    "B",
-    "KiB",
-    "MiB",
-    "GiB",
-    "TiB",
-]
-
-
-def format_filesize(size):
-    i = int(log(size, 1024))
-    size = size / 1024**i
-    # Calculate number of decimal points to show
-    p = max(2 - int(log10(size)), 0)
-    size = round(size, p)
-    if p == 0:
-        return f"{int(size)}{size_units[i]}"
-    return f"{size:.{p}f}{size_units[i]}"
-
-
 class File:
-    FOLDER_ICON_FILENAME = "icons/folder.svg"
-    FILE_ICON_FILENAME = "icons/document.svg"
-
     @property
     def size(self):
         if self.is_dir():
@@ -47,9 +26,10 @@ class File:
         if icon_url is not None:
             self.icon_url = icon_url
         elif self.is_dir():
-            self.icon_url = url_for("static", filename=self.FOLDER_ICON_FILENAME)
+            self.icon_url = url_for("static", filename=FOLDER_ICON_FILENAME)
         else:
-            self.icon_url = url_for("static", filename=self.FILE_ICON_FILENAME)
+            self.icon_url = url_for("static", filename=FILE_ICON_FILENAME)
+        self.url = BROWSE_BASE_URL + self.path.as_posix()
 
     def __str__(self):
         return str(self.path)
@@ -62,12 +42,14 @@ class File:
 
 
 @app.route("/")
-@app.route("/<path:path>")
-def hello_world(path=""):
-    base_path = Path() / path
-    if not base_path.resolve().is_relative_to(Path.cwd()):
-        # Don't allow user to escape CWD
-        base_path = Path()
+def index():
+    return redirect(BROWSE_BASE_URL, 301)
+
+
+@app.route(BROWSE_BASE_URL)
+@app.route(f"{BROWSE_BASE_URL}<path:path>")
+def browse(path=""):
+    base_path = restrict_path(Path(path), Path.cwd())
     if base_path.is_file():
         # Send file if one is requested
         return send_file(
@@ -80,7 +62,7 @@ def hello_world(path=""):
     if base_path.resolve() != Path.cwd():
         back_folder = File(
             base_path / "..",
-            icon_url=url_for("static", filename="icons/folder-left.svg"),
+            icon_url=url_for("static", filename=FOLDER_BACK_ICON_FILENAME),
         )
         items = chain([back_folder], items)
     return render_template(

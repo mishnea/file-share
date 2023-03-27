@@ -28,10 +28,11 @@ body {
 
 a {
     color: var(--color-500);
+    text-decoration: none;
 }
 
 a:visited {
-    color: var(--color-400);
+    color: var(--color-500);
 }
 
 #content {

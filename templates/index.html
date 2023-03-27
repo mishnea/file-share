@@ -17,7 +17,7 @@
         <ul id="file-list">
             {% for item in items %}
             <li>
-                <a href="/{{ item }}" title="{{ item.name }}">
+                <a href="{{ item.url }}" title="{{ item.name }}">
                     <div>
                         <img src="{{ item.icon_url }}" alt="">
                         <p>{{ item.name }}</p>
