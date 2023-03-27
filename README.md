@@ -4,15 +4,19 @@
 
 Loopback only:
 
-`flask run --debug`
+`env PYTHONPATH=$PYTHONPATH:.. python -m file-share -d`
 
 LAN:
 
-`flask run --debug --host 0.0.0.0`
+`env PYTHONPATH=$PYTHONPATH:.. python -m file-share -d -h 0.0.0.0`
 
-## Deploy
+## Deployment
 
-`flask run --host 0.0.0.0`
+Serve your home directory:
+
+`python -m file-share -h 0.0.0.0 -b ~`
+
+More configuration can be found using the `--help` flag
 
 ## Attributions
 

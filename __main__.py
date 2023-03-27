@@ -1,7 +1,8 @@
 from argparse import ArgumentParser
 from pathlib import Path
 
-from .app import app
+from .src import app
+from .src.app import app as flask_app
 
 
 parser = ArgumentParser(
@@ -23,14 +24,17 @@ parser.add_argument(
 
 parser.add_argument("-p", "--port", default="5000", help="Specify the port")
 
+parser.add_argument("-b", "--base-dir", type=Path, default=Path.cwd(), help="Set the directory which is served")
+
 args = parser.parse_args()
 
 if args.help:
     parser.print_help()
 else:
-    print("Serving directory", Path.cwd())
+    app.BASE_DIR = args.base_dir
+    print("Serving directory", app.BASE_DIR)
     if args.debug:
-        app.run(host=args.host, port=args.port, debug=True)
+        flask_app.run(host=args.host, port=args.port, debug=True)
     else:
         # Replace with different WSGI server
-        app.run(host=args.host, port=args.port)
+        flask_app.run(host=args.host, port=args.port)

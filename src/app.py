@@ -4,17 +4,20 @@ from pathlib import Path
 
 from flask import Flask, render_template, url_for, send_file, redirect
 
-from utils.constants import *
-from utils.helpers import format_filesize, restrict_path
+from .utils.constants import *
+from .utils.helpers import format_filesize, restrict_path
 
 
 app = Flask(__name__)
 
 
+BASE_DIR = Path.cwd()
+
+
 class File:
     @property
     def size(self):
-        if self.is_dir():
+        if self.path.is_dir() or self.path.is_symlink():
             return ""
         return format_filesize(self.path.stat().st_size)
 
@@ -29,7 +32,7 @@ class File:
             self.icon_url = url_for("static", filename=FOLDER_ICON_FILENAME)
         else:
             self.icon_url = url_for("static", filename=FILE_ICON_FILENAME)
-        self.url = BROWSE_BASE_URL + self.path.as_posix()
+        self.url = BROWSE_BASE_URL + self.path.relative_to(BASE_DIR).as_posix()
 
     def __str__(self):
         return str(self.path)
@@ -49,17 +52,17 @@ def index():
 @app.route(BROWSE_BASE_URL)
 @app.route(f"{BROWSE_BASE_URL}<path:path>")
 def browse(path=""):
-    base_path = restrict_path(Path(path), Path.cwd())
+    base_path = restrict_path(Path(path), BASE_DIR)
     if base_path.is_file():
         # Send file if one is requested
         return send_file(
-            base_path.resolve(True).relative_to(Path.cwd()), as_attachment=True
+            BASE_DIR.joinpath(base_path).resolve(True), as_attachment=True
         )
     if not base_path.exists():
         # Use CWD in case base_path doesn't exist
         base_path = Path()
-    items = map(File, base_path.iterdir())
-    if base_path.resolve() != Path.cwd():
+    items = map(File, filter(methodcaller("exists"), base_path.iterdir()))
+    if base_path.resolve() != BASE_DIR:
         back_folder = File(
             base_path / "..",
             icon_url=url_for("static", filename=FOLDER_BACK_ICON_FILENAME),

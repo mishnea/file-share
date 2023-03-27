@@ -5,17 +5,18 @@ from .constants import SIZE_UNITS
 
 
 def restrict_path(unsafe_path, base_path):
-    """Return `unsafe_path` relative to `base_path`"""
+    """Return `unsafe_path` resolved with base `base_path` if it's relative, else `base_path`"""
 
-    unsafe_path = Path(unsafe_path).resolve()
     base_path = Path(base_path).resolve()
-    try:
-        return unsafe_path.relative_to(base_path)
-    except ValueError:
-        return Path()
+    unsafe_path = Path(base_path / unsafe_path).resolve()
+    if unsafe_path.is_relative_to(base_path):
+        return unsafe_path
+    return base_path
 
 
 def format_filesize(size):
+    if size == 0:
+        return "0B"
     i = int(log(size, 1024))
     size = size / 1024**i
     # Calculate number of decimal points to show
