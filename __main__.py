@@ -24,7 +24,13 @@ parser.add_argument(
 
 parser.add_argument("-p", "--port", default="5000", help="Specify the port")
 
-parser.add_argument("-b", "--base-dir", type=Path, default=Path.cwd(), help="Set the directory which is served")
+parser.add_argument(
+    "-b",
+    "--base-dir",
+    type=Path,
+    default=Path.cwd(),
+    help="Set the directory which is served",
+)
 
 args = parser.parse_args()
 

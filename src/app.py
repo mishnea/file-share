@@ -55,9 +55,7 @@ def browse(path=""):
     base_path = restrict_path(Path(path), BASE_DIR)
     if base_path.is_file():
         # Send file if one is requested
-        return send_file(
-            BASE_DIR.joinpath(base_path).resolve(True), as_attachment=True
-        )
+        return send_file(BASE_DIR.joinpath(base_path).resolve(True), as_attachment=True)
     if not base_path.exists():
         # Use CWD in case base_path doesn't exist
         base_path = Path()

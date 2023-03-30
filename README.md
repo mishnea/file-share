@@ -1,5 +1,13 @@
 # File Share
 
+## Setup
+
+1. `python -m venv .venv`
+2. Depends on OS:
+   - Linux: `source .venv/bin/activate`
+   - Windows: `.\.venv\Scripts\activate.ps1`
+3. `pip install -r requirements.txt`
+
 ## Develop
 
 Loopback only:
@@ -10,13 +18,17 @@ LAN:
 
 `env PYTHONPATH=$PYTHONPATH:.. python -m file-share -d -h 0.0.0.0`
 
-## Deployment
+With Setup UI:
 
-Serve your home directory:
+`python ui.py`
 
-`python -m file-share -h 0.0.0.0 -b ~`
+## Build
 
-More configuration can be found using the `--help` flag
+`pyinstaller file-share.spec`
+
+## Run
+
+Download the binary for your OS and run it
 
 ## Attributions
 
