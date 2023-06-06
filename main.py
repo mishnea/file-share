@@ -1,8 +1,8 @@
 from argparse import ArgumentParser
 from pathlib import Path
 
-from .src import app
-from .src.app import app as flask_app
+from src import app
+from src.app import app as flask_app
 
 
 parser = ArgumentParser(
@@ -12,6 +12,8 @@ parser = ArgumentParser(
 )
 
 parser.add_argument("--help", action="store_true", help="Show a help message")
+
+parser.add_argument("--gui", action="store_true", help="Run a setup GUI")
 
 parser.add_argument("-d", "--debug", action="store_true", help="Use Flask's debug mode")
 
@@ -36,6 +38,8 @@ args = parser.parse_args()
 
 if args.help:
     parser.print_help()
+elif args.gui:
+    import src.gui
 else:
     app.BASE_DIR = args.base_dir
     print("Serving directory", app.BASE_DIR)

@@ -12,15 +12,15 @@
 
 Loopback only:
 
-`env PYTHONPATH=$PYTHONPATH:.. python -m file-share -d`
+`python main.py -d`
 
 LAN:
 
-`env PYTHONPATH=$PYTHONPATH:.. python -m file-share -d -h 0.0.0.0`
+`python main.py -d -h 0.0.0.0`
 
 With Setup UI:
 
-`python ui.py`
+`python main.py --ui`
 
 ## Build
 
