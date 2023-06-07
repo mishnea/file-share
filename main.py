@@ -12,14 +12,16 @@ parser = ArgumentParser(
     add_help=False,
 )
 
-parser.add_argument("--help", action="store_true", help="Show a help message")
+parser.add_argument("-h", "--help", action="store_true", help="Show a help message")
 
-parser.add_argument("--gui", action="store_true", help="Run a setup GUI")
+parser.add_argument(
+    "-n", "--no-gui", action="store_true", help="Don't show a setup GUI"
+)
 
 parser.add_argument("-d", "--debug", action="store_true", help="Use Flask's debug mode")
 
 parser.add_argument(
-    "-h",
+    "-H",
     "--host",
     default="127.0.0.1",
     help="Specify the hostname. Use 0.0.0.0 to allow all incoming connections",
@@ -39,7 +41,7 @@ args = parser.parse_args()
 
 if args.help:
     parser.print_help()
-elif args.gui:
+elif not (args.no_gui or args.debug):
     GUI(args.host, args.port, args.base_dir).mainloop()
 else:
     app.BASE_DIR = args.base_dir
