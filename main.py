@@ -3,6 +3,7 @@ from pathlib import Path
 
 from src import app
 from src.app import app as flask_app
+from src.gui import GUI
 
 
 parser = ArgumentParser(
@@ -39,7 +40,7 @@ args = parser.parse_args()
 if args.help:
     parser.print_help()
 elif args.gui:
-    import src.gui
+    GUI(args.host, args.port, args.base_dir).mainloop()
 else:
     app.BASE_DIR = args.base_dir
     print("Serving directory", app.BASE_DIR)

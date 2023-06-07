@@ -9,104 +9,118 @@ from . import app
 from .app import app as flask_app
 
 
-def select_dir():
-    path = askdirectory(mustexist=True, title="Select directory to serve")
-    if not path:
-        return
-    base_dir.set(path)
+PADDING = {"padx": 10, "pady": 10}
 
 
-def start():
-    global p
+class GUI(Frame):
+    def __init__(self, host, port, base_dir):
+        self.p = mp.Process()
+        self.root = Tk()
+        self.root.bind("<Destroy>", lambda *_: self._stop())
+        self.root.title("file-share")
+        super().__init__(self.root, padding=10)
+        self.grid()
 
-    set_gui(True)
-    app.BASE_DIR = Path(base_dir.get())
-    # Replace with different WSGI server
-    p = mp.Process(target=flask_app.run, kwargs=dict(host=host.get(), port=port.get()))
-    p.start()
+        # Set up widgets
+        self.host = StringVar(value=host)
+        self.port = StringVar(value=port)
+        self.base_dir = StringVar(value=base_dir)
+        self._init_widgets()
 
+    def _init_widgets(self):
+        """Add necessary widgets to self"""
 
-def stop():
-    p.terminate()
-    p.join()
-    set_gui(False)
+        # Make changing order of rows less painful
+        counter = count()
 
+        # Base directory
+        row = next(counter)
+        Label(self, text="Directory").grid(row=row, column=0, sticky="E", **PADDING)
+        # New frame contains entry and button for correct alignment
+        base_dir_frm = Frame(self)
+        base_dir_frm.grid(row=row, column=1, **PADDING)
+        directory_entry = Entry(base_dir_frm, textvariable=self.base_dir)
+        directory_entry.grid(row=row, column=1)
+        directory_button = Button(
+            base_dir_frm, text="...", width=2, command=self._select_dir
+        )
+        directory_button.grid(row=row, column=2)
 
-def quit(*_):
-    if p.is_alive():
-        p.terminate()
-        p.join()
+        # Host
+        row = next(counter)
+        Label(self, text="Host").grid(row=row, column=0, sticky="E", **PADDING)
+        host_entry = Entry(self, textvariable=self.host)
+        host_entry.grid(row=row, column=1, sticky="EW", **PADDING)
 
+        # Port
+        row = next(counter)
+        Label(self, text="Port").grid(row=row, column=0, sticky="E", **PADDING)
+        port_entry = Entry(self, textvariable=self.port)
+        port_entry.grid(row=row, column=1, sticky="EW", **PADDING)
 
-def set_gui(running: bool):
-    if running:
-        start_button.grid_remove()
-        stop_button.grid()
-        state = "disabled"
-    else:
-        stop_button.grid_remove()
-        start_button.grid()
-        state = "normal"
-    for widget in disable_list:
-        widget.config(state=state)
+        # Start/Stop
+        row = next(counter)
+        self.start_button = Button(self, text="Start", command=self._on_start_button)
+        self.start_button.grid(row=row, column=0, columnspan=2, **PADDING)
+        self.stop_button = Button(self, text="Stop", command=self._on_stop_button)
+        self.stop_button.grid(row=row, column=0, columnspan=2, **PADDING)
+        self.stop_button.grid_remove()
 
+        # Widgets to enable/disable
+        self.disable_list = [
+            directory_entry,
+            directory_button,
+            host_entry,
+            port_entry,
+        ]
 
-padding = {"padx": 10, "pady": 10}
+    def _on_start_button(self):
+        """Change GUI state and stop the server process"""
 
+        # Change GUI state
+        self.start_button.grid_remove()
+        self.stop_button.grid()
+        for widget in self.disable_list:
+            widget.config(state="disabled")
+        # Start the server
+        self._start()
 
-# Initialise
-p = mp.Process()
-root = Tk()
-root.bind("<Destroy>", quit)
-frm = Frame(root, padding=10)
-frm.master.title("file-share")
-frm.grid()
+    def _on_stop_button(self):
+        """Stop the server process and change GUI state"""
 
-# Add widgets
-# Make changing order of rows less painful
-counter = count()
+        # Stop the process
+        self._stop()
+        # Change GUI state
+        self.stop_button.grid_remove()
+        self.start_button.grid()
+        for widget in self.disable_list:
+            widget.config(state="normal")
 
-# Base directory
-base_dir = StringVar(value=Path.cwd())
-row = next(counter)
-Label(frm, text="Directory").grid(row=row, column=0, sticky="E", **padding)
-# Frame contains entry and button for correct alignment
-base_dir_frm = Frame(frm)
-base_dir_frm.grid(row=row, column=1, **padding)
-directory_entry = Entry(base_dir_frm, textvariable=base_dir)
-directory_entry.grid(row=row, column=1)
-directory_button = Button(base_dir_frm, text="...", width=2, command=select_dir)
-directory_button.grid(row=row, column=2)
+    def _select_dir(self):
+        """Open a dialog to choose folder for base_dir"""
 
-# Host
-host = StringVar(value="0.0.0.0")
-row = next(counter)
-Label(frm, text="Host").grid(row=row, column=0, sticky="E", **padding)
-host_entry = Entry(frm, textvariable=host)
-host_entry.grid(row=row, column=1, sticky="EW", **padding)
+        path = askdirectory(mustexist=True, title="Select directory to serve")
+        if not path:
+            return
+        self.base_dir.set(path)
 
-# Port
-port = StringVar(value="5000")
-row = next(counter)
-Label(frm, text="Port").grid(row=row, column=0, sticky="E", **padding)
-port_entry = Entry(frm, textvariable=port)
-port_entry.grid(row=row, column=1, sticky="EW", **padding)
+    def _start(self):
+        """Start the server process"""
 
-# Start/Stop
-row = next(counter)
-start_button = Button(frm, text="Start", command=start)
-start_button.grid(row=row, column=0, columnspan=2, **padding)
-stop_button = Button(frm, text="Stop", command=stop)
-stop_button.grid(row=row, column=0, columnspan=2, **padding)
-stop_button.grid_remove()
+        if self.p.is_alive():
+            return
+        app.BASE_DIR = Path(self.base_dir.get())
+        # Replace with different WSGI server
+        self.p = mp.Process(
+            target=flask_app.run,
+            kwargs=dict(host=self.host.get(), port=self.port.get()),
+        )
+        self.p.start()
 
-# Widgets to enable/disable
-disable_list = [
-    directory_entry,
-    directory_button,
-    host_entry,
-    port_entry,
-]
+    def _stop(self):
+        """Stop the server process"""
 
-# Run
-root.mainloop()
+        if not self.p.is_alive():
+            return
+        self.p.terminate()
+        self.p.join()
